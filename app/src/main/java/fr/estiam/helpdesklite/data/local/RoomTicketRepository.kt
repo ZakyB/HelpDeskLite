@@ -5,7 +5,6 @@ import fr.estiam.helpdesklite.model.Status
 import fr.estiam.helpdesklite.model.SupportTicket
 import fr.estiam.helpdesklite.model.TicketRules
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
 class RoomTicketRepository(
@@ -15,19 +14,21 @@ class RoomTicketRepository(
     override suspend fun add(ticket: SupportTicket) = dao.insert(ticket.toRow())
 
     override suspend fun findById(id: String): SupportTicket? {
-        // TODO Exercise 3: Retrieve and map a matching row.
-        return null
+        return dao.findById(id)?.toTicket()
     }
 
     override suspend fun updateStatus(id: String, status: Status): Boolean {
-        // TODO Exercise 3: Use the supplied policy and DAO methods to persist a valid change.
-        return false
+        val row = dao.findById(id) ?: return false
+        if (row.status == status || !canTransition(row.status, status)) {
+            return false
+        }
+
+        return dao.updateStatus(id, row.status, status) == 1
     }
 
     override fun observeAll() = dao.observeAll().map { rows -> rows.map(TicketRow::toTicket) }
 
     override fun observeByStatus(status: Status): Flow<List<SupportTicket>> {
-        // TODO Exercise 3: Expose the matching rows as domain tickets.
-        return flowOf(emptyList())
+        return dao.observeByStatus(status).map { rows -> rows.map(TicketRow::toTicket) }
     }
 }
