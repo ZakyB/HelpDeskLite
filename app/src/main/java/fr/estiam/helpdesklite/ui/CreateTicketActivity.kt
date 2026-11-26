@@ -44,8 +44,8 @@ class CreateTicketActivity : AppCompatActivity() {
         binding.saveTicket.isEnabled = false
         lifecycleScope.launch {
             try {
-                // TODO Exercise 4: Persist the prepared ticket and return to the catalogue on success.
-                binding.saveTicket.isEnabled = true
+                (application as HelpDeskApplication).tickets.add(ticket)
+                finish() // on ne ferme le formulaire qu'après une insertion réussie
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Exception) {
